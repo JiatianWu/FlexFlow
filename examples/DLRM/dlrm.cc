@@ -33,7 +33,7 @@ Tensor create_mlp(FFModel* model, const Tensor& input,
     std_dev = sqrt(2.0f / ln[i+1]);
     Initializer* bias_init = new NormInitializer(std::rand(), 0, std_dev);
     ActiMode activation = i == sigmoid_layer ? AC_MODE_SIGMOID : AC_MODE_RELU;
-    t = model->dense("linear", t, ln[i+1], activation, true/*bias*/, weight_init, bias_init);
+    t = model->dense(t, ln[i+1], activation, true/*bias*/, weight_init, bias_init);
   }
   return t;
 }
@@ -43,7 +43,7 @@ Tensor create_emb(FFModel* model, const Tensor& input,
 {
   float range = sqrt(1.0f / input_dim);
   Initializer* embed_init = new UniformInitializer(std::rand(), -range, range);
-  return model->embedding("embedding"+std::to_string(idx), input, input_dim, output_dim, AGGR_MODE_SUM, embed_init);
+  return model->embedding(input, input_dim, output_dim, AGGR_MODE_SUM, embed_init);
 }
 
 Tensor interact_features(FFModel* model, const Tensor& x,
@@ -57,7 +57,7 @@ Tensor interact_features(FFModel* model, const Tensor& x,
     inputs[0] = x;
     for (size_t i = 0; i < ly.size(); i++)
       inputs[i+1] = ly[i];
-    return model->concat("concat", ly.size() + 1, inputs, 1/*axis*/);
+    return model->concat(ly.size() + 1, inputs, 1/*axis*/);
     free(inputs);
   } else {
     assert(false);
@@ -130,20 +130,25 @@ void top_level_task(const Task* task,
     // TODO: implement clamp
     assert(false);
   }
-  ff.mse_loss("mse_loss"/*name*/, p, label, "average"/*reduction*/);
+  ff.mse_loss(p, label, "average"/*reduction*/);
+  ff.compile();
   // Use SGD Optimizer
   ff.optimizer = new SGDOptimizer(&ff, 0.01f);
-  ff.init_layers();
+  //ff.init_layers();
   // Data Loader
   DataLoader data_loader(ff, dlrmConfig, sparse_inputs, dense_input, label);
 
+  std::cout << "BEFORE INIT LAYERS" << std::endl;
+  ff.init_layers();
+  std::cout << "AFTER INIT LAYERS" << std::endl;
+
   // Warmup iterations
-  for (int iter = 0; iter < 1; iter++) {
+  for (int iter = 0; iter < 0; iter++) {
     data_loader.reset();
     ff.reset_metrics();
     data_loader.next_batch(ff);
     ff.forward();
-    //ff.zero_gradients();
+    ff.zero_gradients();
     ff.backward();
     ff.update();
   }

@@ -4,8 +4,7 @@ project(FlexFlowExample_Mnist)
 set(project_target mnist)
 
 set(CPU_SOURCES
-  mnist.cc
-  mnist.h)
+  mnist.cc)
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Wno-deprecated-gpu-targets)
 

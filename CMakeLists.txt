@@ -117,5 +117,5 @@ if(${BUILD_DLRM} OR ${BUILD_ALL_EXAMPLES})
 endif()
 
 if(${BUILD_MNIST} OR ${BUILD_ALL_EXAMPLES})
-  add_subdirectory(examples/Mnist)
+  add_subdirectory(examples/mnist)
 endif()

@@ -14,7 +14,6 @@
  */
 
 #include "model.h"
-#include "mnist.h"
 using namespace Legion;
 
 LegionRuntime::Logger::Category log_app("Mnist");
