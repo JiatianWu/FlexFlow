@@ -140,12 +140,8 @@ void top_level_task(const Task* task,
   DataLoader data_loader(ff, dlrmConfig, sparse_inputs, dense_input, ff.label_tensor);
   ff.init_layers();
 
-  std::cout << "BEFORE INIT LAYERS" << std::endl;
-  ff.init_layers();
-  std::cout << "AFTER INIT LAYERS" << std::endl;
-
   // Warmup iterations
-  for (int iter = 0; iter < 0; iter++) {
+  for (int iter = 0; iter < 1; iter++) {
     data_loader.reset();
     ff.reset_metrics();
     data_loader.next_batch(ff);
