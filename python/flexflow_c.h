@@ -36,6 +36,7 @@ FF_NEW_OPAQUE_TYPE(flexflow_uniform_initializer_t);
 FF_NEW_OPAQUE_TYPE(flexflow_norm_initializer_t);
 FF_NEW_OPAQUE_TYPE(flexflow_op_t);
 FF_NEW_OPAQUE_TYPE(flexflow_parameter_t);
+FF_NEW_OPAQUE_TYPE(flexflow_perf_metrics_t);
 FF_NEW_OPAQUE_TYPE(flexflow_net_config_t);
 FF_NEW_OPAQUE_TYPE(flexflow_dataloader_4d_t);
 FF_NEW_OPAQUE_TYPE(flexflow_dataloader_2d_t);
@@ -111,11 +112,22 @@ flexflow_model_backward(
   flexflow_model_t handle);
 
 void
+flexflow_model_compute_metrics(
+  flexflow_model_t handle);
+
+void
 flexflow_model_update(
   flexflow_model_t handle);
 
 void
 flexflow_model_compile(
+  flexflow_model_t handle,
+  enum LossType loss_type,
+  int *metrics,
+  int nb_metrics);
+
+flexflow_tensor_t
+flexflow_model_get_label_tensor(
   flexflow_model_t handle);
 
 void
@@ -161,6 +173,7 @@ flexflow_model_add_conv2d(
   int padding_h, int padding_w,
   enum ActiMode activation /* AC_MODE_NONE */,
   bool use_bias /* True */,
+  flexflow_op_t shared_op,
   flexflow_initializer_t kernel_initializer,
   flexflow_initializer_t bias_initializer);
   
@@ -183,6 +196,7 @@ flexflow_model_add_embedding(
   const flexflow_tensor_t input,
   int num_entires, int out_dim,
   enum AggrMode aggr,
+  flexflow_op_t shared_op,
   flexflow_initializer_t kernel_initializer);  
   
 flexflow_tensor_t
@@ -217,6 +231,7 @@ flexflow_model_add_dense(
   int out_dim,
   enum ActiMode activation /* AC_MODE_NONE */,
   bool use_bias /* true */,
+  flexflow_op_t shared_op,
   flexflow_initializer_t kernel_initializer,
   flexflow_initializer_t bias_initializer);
   
@@ -249,15 +264,41 @@ flexflow_model_add_flat_no_inout(
 flexflow_tensor_t
 flexflow_model_add_softmax(
   flexflow_model_t handle,
-  const flexflow_tensor_t input,
-  const flexflow_tensor_t label);
+  const flexflow_tensor_t input);
   
-void
-flexflow_model_add_mse_loss(
+flexflow_tensor_t
+flexflow_model_add_relu(
   flexflow_model_t handle,
-  const flexflow_tensor_t logits,
-  const flexflow_tensor_t labels,
-  const char* reduction);
+  const flexflow_tensor_t input);
+  
+flexflow_tensor_t
+flexflow_model_add_sigmod(
+  flexflow_model_t handle,
+  const flexflow_tensor_t input);
+    
+flexflow_tensor_t
+flexflow_model_add_tanh(
+  flexflow_model_t handle,
+  const flexflow_tensor_t input);
+  
+flexflow_tensor_t
+flexflow_model_add_elu(
+  flexflow_model_t handle,
+  const flexflow_tensor_t input);
+  
+flexflow_tensor_t
+flexflow_model_add_dropout(
+  flexflow_model_t handle,
+  const flexflow_tensor_t input,
+  float rate, 
+  unsigned long long seed);
+  
+// void
+// flexflow_model_add_mse_loss(
+//   flexflow_model_t handle,
+//   const flexflow_tensor_t logits,
+//   const flexflow_tensor_t labels,
+//   const char* reduction);
   
 void
 flexflow_model_set_sgd_optimizer(
@@ -283,6 +324,10 @@ flexflow_parameter_t
 flexflow_model_get_parameter_by_id(
   flexflow_model_t handle,
   int layer_id);
+  
+flexflow_perf_metrics_t
+flexflow_model_get_perf_metrics(
+  flexflow_model_t handle);
 
 // -----------------------------------------------------------------------
 // Tensor
@@ -331,6 +376,10 @@ flexflow_tensor_get_dims(
 
 int
 flexflow_tensor_get_data_type(
+  flexflow_tensor_t handle);
+
+flexflow_op_t
+flexflow_tensor_get_owner_op(
   flexflow_tensor_t handle);
 
 void
@@ -383,6 +432,11 @@ void
 flexflow_sgd_optimizer_destroy(
   flexflow_sgd_optimizer_t handle);
 
+void 
+flexflow_sgd_optimizer_set_lr(
+  flexflow_sgd_optimizer_t handle, 
+  double lr);
+
 // -----------------------------------------------------------------------
 // AdamOptimizer
 // -----------------------------------------------------------------------
@@ -399,6 +453,11 @@ flexflow_adam_optimizer_create(
 void 
 flexflow_adam_optimizer_destroy(
   flexflow_adam_optimizer_t handle);
+
+void 
+flexflow_adam_optimizer_set_lr(
+  flexflow_adam_optimizer_t handle, 
+  double lr);
 
 // -----------------------------------------------------------------------
 // Initializer
@@ -456,6 +515,17 @@ flexflow_norm_initializer_create(
 void  
 flexflow_norm_initializer_destroy(
   flexflow_norm_initializer_t handle);
+
+// -----------------------------------------------------------------------
+// PerfMetrics
+// -----------------------------------------------------------------------
+void
+flexflow_per_metrics_destroy(
+  flexflow_perf_metrics_t handle);
+
+float
+flexflow_per_metrics_get_accuracy(
+  flexflow_perf_metrics_t handle);
 
 // -----------------------------------------------------------------------
 // NetConfig
